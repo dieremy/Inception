@@ -1,8 +1,15 @@
-FROM alpine:3.15
+FROM alpine:3.15.0
 
-ARG PHP_VERSION=7.4 DB_NAME DB_USER DB_PSWD
+ENV BASH_VERSION=5.2.26-r0
+ENV PHP_VERSION=7.4
 
-RUN apk update && apk upgrade && apk add --no-cache \
+ARG DB_NAME
+ARG DB_USER
+ARG DB_PSWD
+
+RUN apk update && \
+  apk add --no-cache \
+  bash=${BASH_VERSION} \
 	php${PHP_VERSION} \
 	php${PHP_VERSION}-fpm \
   php${PHP_VERSION}-mysqli \
@@ -15,5 +22,20 @@ RUN apk update && apk upgrade && apk add --no-cache \
   php${PHP_VERSION}-openssl \
   php${PHP_VERSION}-xml \
   php${PHP_VERSION}-zip \
-  php${PHP_VERSION}-redis \
+  php${PHP_VERSION}-redis
 
+WORKDIR /var/www
+
+# .zip or .tar.gz ?
+RUN wget https://wordpress.org/latest.zip && \ 
+    unzip latest.zip && \
+    cp -rf wordpress/* . && \
+    rm -rf wordpress latest.zip
+
+COPY containers/wordpress/script.sh .
+
+RUN bash script.sh
+RUN chmod -R 755 wp-content
+RUN chown -R www-data:www-data .
+
+CMD ["/usr/sbin/php-fpm8", "-F"]
