@@ -23,7 +23,7 @@ services:
       args:
         DB_NAME: ${DB_NAME}
         DB_USER: ${DB_USER}
-        DB_PWD: ${DB_PWD}
+        DB_PSW: ${DB_PSW}
         DB_ROOT: ${DB_ROOT}
     container_name: mariadb
     ports:
@@ -40,7 +40,7 @@ services:
       args:
         DB_NAME: ${DB_NAME}
         DB_USER: ${DB_USER}
-        DB_PWD: ${DB_PWD}
+        DB_PSW: ${DB_PSW}
     container_name: wordpress
     depends_on:
       - mariadb
@@ -67,7 +67,7 @@ services:
       dockerfile: containers/ftp/Dockerfile
       args:
         FTP_USR: ${FTP_USR}
-        FTP_PWD: ${FTP_PWD}
+        FTP_PSW: ${FTP_PSW}
     container_name: ftp
     depends_on:
       - wordpress

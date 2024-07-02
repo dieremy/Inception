@@ -12,7 +12,7 @@ if [ ! -d "/var/lib/mysql/wordpress" ]; then
   CREATE_DB="USE mysql;
 FLUSH PRIVILEGES;
 CREATE DATABASE ${DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;
-CREATE USER '${DB_USER}'@'%' IDENTIFIED by '${DB_PASS}';
+CREATE USER '${DB_USER}'@'%' IDENTIFIED by '${DB_PSW}';
 GRANT ALL PRIVILEGES ON wordpress.* TO '${DB_USER}'@'%';
 FLUSH PRIVILEGES;"
 
