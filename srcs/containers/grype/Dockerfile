@@ -1,6 +1,6 @@
 FROM alpine:3.15.0
 
-ENV GRYPE_VERSION=grype:latest
+ENV GRYPE_VERSION="v0.79.1"
 
 RUN apk update && \
     apk add --no-cache \

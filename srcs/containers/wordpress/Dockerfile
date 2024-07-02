@@ -1,17 +1,19 @@
 FROM alpine:3.15.0
 
 ENV BASH_VERSION=5.2.26-r0
+ENV CURL_VERSION=8.5.0-r0
 ENV PHP_VERSION=7.4
 
 ARG DB_NAME
 ARG DB_USER
-ARG DB_PSWD
+ARG DB_PWD
 
 RUN apk update && \
   apk add --no-cache \
   bash=${BASH_VERSION} \
-	php${PHP_VERSION} \
-	php${PHP_VERSION}-fpm \
+  curl=${CURL_VERSION} \
+  php${PHP_VERSION} \
+  php${PHP_VERSION}-fpm \
   php${PHP_VERSION}-mysqli \
   php${PHP_VERSION}-json \
   php${PHP_VERSION}-curl \
@@ -27,7 +29,7 @@ RUN apk update && \
 WORKDIR /var/www
 
 # .zip or .tar.gz ?
-RUN wget https://wordpress.org/latest.zip && \ 
+RUN curl -L https://wordpress.org/latest.zip && \
     unzip latest.zip && \
     cp -rf wordpress/* . && \
     rm -rf wordpress latest.zip
