@@ -1,10 +1,10 @@
 FROM alpine:3.15.0
 
 ENV PHP_VERSION=8
-ENV CURL_VERSION=8.5.0-r0
+ENV WGET_VERSION=1.21.2-r2
 
 RUN apk update && apk upgrade && apk add --no-cache \
-    curl=${CURL_VERSION} \
+    wget=${WGET_VERSION} \
     php${PHP_VERSION} \
     php${PHP_VERSION}-common \
     php${PHP_VERSION}-session \
@@ -27,10 +27,12 @@ RUN apk update && apk upgrade && apk add --no-cache \
 
 WORKDIR /var/www
 
-RUN curl -L https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php && \
+RUN wget -L https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php && \
     mv adminer-4.8.1.php index.php && \
     chown -R root:root /var/www/
 
 EXPOSE 8080
 
-CMD	[ "php", "-S", "[::]:8080", "-t", "/var/www" ]
+# CMD	[ "php", "-S", "[::]:8080", "-t", "/var/www" ]  
+CMD [ "/usr/bin/php8", "-S", "[::]:8080", "-t", "/var/www" ]
+

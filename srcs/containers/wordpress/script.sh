@@ -8,7 +8,8 @@ fi
 
 if [ ! -f "/var/www/wp-config.php" ]; then
 
-    CREATE_WP_CONFIG="<?php
+cat << EOF > /var/www/wp-config.php
+<?php
 define( 'DB_NAME', '${DB_NAME}' );
 define( 'DB_USER', '${DB_USER}' );
 define( 'DB_PASSWORD', '${DB_PASS}' );
@@ -25,8 +26,7 @@ define( 'WP_REDIS_PORT', 6379 );
 define( 'WP_REDIS_TIMEOUT', 1 );
 define( 'WP_REDIS_READ_TIMEOUT', 1 );
 define( 'WP_REDIS_DATABASE', 0 );
-require_once ABSPATH . 'wp-settings.php';"
-
-echo "$CREATE_WP_CONFIG" > /var/www/wp-config.php
+require_once ABSPATH . 'wp-settings.php';
+EOF
 
 fi

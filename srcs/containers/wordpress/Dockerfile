@@ -1,8 +1,8 @@
 FROM alpine:3.15.0
 
-ENV BASH_VERSION=5.2.26-r0
-ENV CURL_VERSION=8.5.0-r0
-ENV PHP_VERSION=7.4
+ENV BASH_VERSION=5.1.16-r0
+ENV PHP_VERSION=8
+ENV WGET_VERSION=1.21.2-r2
 
 ARG DB_NAME
 ARG DB_USER
@@ -11,7 +11,7 @@ ARG DB_PWD
 RUN apk update && \
   apk add --no-cache \
   bash=${BASH_VERSION} \
-  curl=${CURL_VERSION} \
+  wget=${WGET_VERSION} \
   php${PHP_VERSION} \
   php${PHP_VERSION}-fpm \
   php${PHP_VERSION}-mysqli \
@@ -24,20 +24,25 @@ RUN apk update && \
   php${PHP_VERSION}-openssl \
   php${PHP_VERSION}-xml \
   php${PHP_VERSION}-zip \
-  php${PHP_VERSION}-redis
+  php${PHP_VERSION}-redis \
+  unzip && \
+  sed -i "s|listen = 127.0.0.1:9000|listen = 9000|g" \
+    /etc/php8/php-fpm.d/www.conf && \
+  sed -i "s|;listen.owner = nobody|listen.owner = nobody|g" \
+    /etc/php8/php-fpm.d/www.conf && \
+  sed -i "s|;listen.group = nobody|listen.group = nobody|g" \
+    /etc/php8/php-fpm.d/www.conf && \
+  rm -f /var/cache/apk/*
 
 WORKDIR /var/www
 
-# .zip or .tar.gz ?
-RUN curl -L https://wordpress.org/latest.zip && \
+RUN wget -L https://wordpress.org/latest.zip && \
     unzip latest.zip && \
     cp -rf wordpress/* . && \
     rm -rf wordpress latest.zip
 
 COPY containers/wordpress/script.sh .
 
-RUN bash script.sh
-RUN chmod -R 755 wp-content
-RUN chown -R www-data:www-data .
-
+RUN bash script.sh && chmod -R 0777 wp-content/
+    
 CMD ["/usr/sbin/php-fpm8", "-F"]

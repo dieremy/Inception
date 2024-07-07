@@ -1,15 +1,15 @@
 FROM alpine:3.15.0
 
-ENV REDIS_VERSION=5.0.14
+ENV REDIS_VERSION=6.2.14-r0
 
 ######## ? ########
 RUN apk update && \
     apk add --no-cache \
-    redis=${REDIS_VERSION} && \
-    sed -i "s|bind 127.0.0.1|#bind 127.0.0.1|g"  /etc/redis.conf && \
-    sed -i "s|# maxmemory <bytes>|maxmemory 20mb|g"  /etc/redis.conf && \
-    echo "maxmemory-policy allkeys-lru" >> /etc/redis.conf
-######## ? ########
+    redis=${REDIS_VERSION}
+#     sed -i "s|bind 127.0.0.1|#bind 127.0.0.1|g"  /etc/redis.conf && \
+#     sed -i "s|# maxmemory <bytes>|maxmemory 20mb|g"  /etc/redis.conf && \
+#     echo "maxmemory-policy allkeys-lru" >> /etc/redis.conf
+# ######## ? ########
 
 EXPOSE 6379
 
