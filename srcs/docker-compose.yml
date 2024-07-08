@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   nginx:
     build:
@@ -104,15 +102,13 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: /home/test/data/wordpress
-      # device: /home/${USER}/data/wordpress
+      device: /home/${USER}/data/wordpress
 
   db-volume:
     driver_opts:
       o: bind
       type: none
-      device: /home/test/data/mariadb
-      # device: /home/${USER}/data/mariadb
+      device: /home/${USER}/data/mariadb
 
 networks:
   inception:
