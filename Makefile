@@ -1,38 +1,48 @@
 name = INCEPTION
 
+HAS_COMMAND := $(shell which figlet >/dev/null 2>&1 && echo yes || echo no)
+
+ifeq ($(HAS_COMMAND), yes)
+  PRINT := figlet
+else
+  PRINT := printf
+endif
+
 all:
 	@printf "CHECKING ${name}'s VOLUMES...\n"
 	@mkdir -p ~/data/mariadb
 	@mkdir -p ~/data/wordpress
 ifeq ($(shell docker ps -q), "")
-	@figlet "STEP RE-LAUNCH ${name}...\n"
+	@$(PRINT) "STEP RE-LAUNCH ${name}...\n"
 	@docker compose -f ./srcs/docker-compose.yml --env-file .env up -d
 else
-	@figlet "STEP BUILD ${name}...\n"
+	@$(PRINT) "STEP BUILD ${name}...\n"
 	@docker compose -f ./srcs/docker-compose.yml --env-file .env up -d --build
 endif
-	@printf "\n\n\n"
-	@docker ps -a
+	@printf "\n\n"
+	@docker ps -a -s
+	@printf "\n\n"
+	@docker system df
 
 build:
-	@figlet "STEP BUILD ${name}...\n"
+	@$(PRINT) "STEP BUILD ${name}...\n"
 	@docker compose -f ./srcs/docker-compose.yml --env-file .env up -d --build
 
 down:
-	@figlet "STEP DROP ${name}...\n"
+	@$(PRINT) "STEP DROP ${name}...\n"
 	@docker compose -f ./srcs/docker-compose.yml --env-file .env down
 
 re: build
-	@figlet "STEP RE-BUILD ${name}...\n"
+	@$(PRINT) "STEP RE-BUILD ${name}...\n"
 
 clean: down
-	@figlet "STEP CLEAN CONFIGURATION ${name}...\n"
+	@$(PRINT) "STEP CLEAN CONFIGURATION ${name}...\n"
 	@docker system prune -a
 	@sudo rm -rf ~/data/wordpress/*
 	@sudo rm -rf ~/data/mariadb/*
 
 fclean: clean
-	@figlet "STEP CLEAN ALL INFRASTRUCTURE docker\n"
+	@$(PRINT) "STEP CLEAN ALL INFRASTRUCTURE docker\n"
 	@docker system prune --all --force --volumes
 	@docker network prune --force
 	@docker volume prune --force
