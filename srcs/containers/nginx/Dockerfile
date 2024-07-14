@@ -1,6 +1,6 @@
-FROM alpine:3.15.0
+FROM alpine:3.16.0
 
-ENV NGINX_VERSION=1.20.2-r2
+ENV NGINX_VERSION=1.22.1-r1
 
 RUN	apk update && \
     apk add --no-cache \

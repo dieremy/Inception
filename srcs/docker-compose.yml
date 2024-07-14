@@ -16,14 +16,19 @@ services:
     restart: always
 
   mariadb:
+    container_name: mariadb
     build:
       dockerfile: containers/mariadb/Dockerfile
-      args:
-        DB_NAME: ${DB_NAME}
-        DB_USER: ${DB_USER}
-        DB_PSW: ${DB_PSW}
-        DB_ROOT: ${DB_ROOT}
-    container_name: mariadb
+      # args:
+      #   DB_NAME: ${DB_NAME}
+      #   DB_USER: ${DB_USER}
+      #   DB_PSW: ${DB_PSW}
+      #   DB_ROOT: ${DB_ROOT}
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PSW: ${DB_PSW}
+      DB_HOST: mariadb
     ports:
       - "3306:3306"
     networks:
@@ -31,17 +36,30 @@ services:
     volumes:
       - db-volume:/var/lib/mysql
     restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   wordpress:
+    container_name: wordpress
     build:
       dockerfile: containers/wordpress/Dockerfile
-      args:
-        DB_NAME: ${DB_NAME}
-        DB_USER: ${DB_USER}
-        DB_PSW: ${DB_PSW}
-    container_name: wordpress
+      # args:
+      #   DB_NAME: ${DB_NAME}
+      #   DB_USER: ${DB_USER}
+      #   DB_PSW: ${DB_PSW}
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PSW: ${DB_PSW}
+      DB_HOST: mariadb
+    # depends_on:
+    #   - mariadb
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     networks:
       - inception
     volumes:
@@ -49,9 +67,9 @@ services:
     restart: always
 
   redis:
+    container_name: redis
     build:
       dockerfile: containers/redis/Dockerfile
-    container_name: redis
     depends_on:
       - wordpress
     ports:
@@ -61,12 +79,12 @@ services:
     restart: always
 
   ftp:
+    container_name: ftp
     build:
       dockerfile: containers/ftp/Dockerfile
       args:
         FTP_USR: ${FTP_USR}
         FTP_PSW: ${FTP_PSW}
-    container_name: ftp
     depends_on:
       - wordpress
     ports:
@@ -78,9 +96,9 @@ services:
     restart: always
 
   adminer:
+    container_name: adminer
     build:
       dockerfile: containers/adminer/Dockerfile
-    container_name: adminer
     depends_on:
       - mariadb
     ports:
@@ -90,9 +108,9 @@ services:
     restart: always
 
   app:
+    container_name: app
     build:
       dockerfile: containers/app/Dockerfile
-    container_name: app
     ports:
       - "80:80"
     restart: always

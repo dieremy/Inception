@@ -1,4 +1,4 @@
-FROM alpine:3.15.0
+FROM alpine:3.16.0
 
 ENV VSFTPD_VERSION=3.0.5-r1
 

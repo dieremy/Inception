@@ -1,7 +1,7 @@
-FROM alpine:3.15.0
+FROM alpine:3.16.0
 
-ENV BASH_VERSION=5.1.16-r0
-ENV MARIADB_VERSION=10.6.14-r0
+ENV BASH_VERSION=5.1.16-r2
+ENV MARIADB_VERSION=10.6.16-r0
 
 ARG	DB_NAME
 ARG	DB_USER
@@ -33,4 +33,5 @@ RUN sh script.sh
 
 USER mysql
 
-CMD ["/usr/bin/mysqld", "--skip-log-error"]
+CMD ["/usr/bin/mysqld"]
+#, "--skip-log-error"]

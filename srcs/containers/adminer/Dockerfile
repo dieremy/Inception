@@ -1,10 +1,9 @@
-FROM alpine:3.15.0
+FROM alpine:3.16.0
 
 ENV PHP_VERSION=8
-ENV WGET_VERSION=1.21.2-r2
+ENV WGET_VERSION=1.21.3-r0
 
 RUN apk update && apk upgrade && apk add --no-cache \
-    wget=${WGET_VERSION} \
     php${PHP_VERSION} \
     php${PHP_VERSION}-common \
     php${PHP_VERSION}-session \
@@ -23,7 +22,8 @@ RUN apk update && apk upgrade && apk add --no-cache \
     php${PHP_VERSION}-ldap \
     php${PHP_VERSION}-ctype \
     php${PHP_VERSION}-dom \
-    php${PHP_VERSION}-simplexml
+    php${PHP_VERSION}-simplexml \
+    wget=${WGET_VERSION}
 
 WORKDIR /var/www
 

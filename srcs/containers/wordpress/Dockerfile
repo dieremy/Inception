@@ -1,12 +1,12 @@
-FROM alpine:3.15.0
+FROM alpine:3.16.0
 
-ENV BASH_VERSION=5.1.16-r0
+ENV BASH_VERSION=5.1.16-r2
 ENV PHP_VERSION=8
-ENV WGET_VERSION=1.21.2-r2
+ENV WGET_VERSION=1.21.3-r0
 
 ARG DB_NAME
 ARG DB_USER
-ARG DB_PWD
+ARG DB_PSW
 
 RUN apk update && \
   apk add --no-cache \
@@ -43,6 +43,6 @@ RUN wget -L https://wordpress.org/latest.zip && \
 
 COPY containers/wordpress/script.sh .
 
-RUN bash script.sh && chmod -R 0777 wp-content/
+RUN bash script.sh && chmod -R 0755 wp-content/
     
 CMD ["/usr/sbin/php-fpm8", "-F"]
