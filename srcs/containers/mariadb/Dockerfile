@@ -29,9 +29,8 @@ EXPOSE 3306
 
 COPY containers/mariadb/script.sh .
 
-RUN sh script.sh
+RUN chmod +x script.sh && bash script.sh
 
 USER mysql
 
-CMD ["/usr/bin/mysqld"]
-#, "--skip-log-error"]
+CMD ["/usr/bin/mysqld", "--skip-log-error"]

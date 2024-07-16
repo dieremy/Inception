@@ -19,16 +19,11 @@ services:
     container_name: mariadb
     build:
       dockerfile: containers/mariadb/Dockerfile
-      # args:
-      #   DB_NAME: ${DB_NAME}
-      #   DB_USER: ${DB_USER}
-      #   DB_PSW: ${DB_PSW}
-      #   DB_ROOT: ${DB_ROOT}
     environment:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PSW: ${DB_PSW}
-      DB_HOST: mariadb
+      DB_ROOT: ${DB_ROOT}
     ports:
       - "3306:3306"
     networks:
@@ -46,17 +41,10 @@ services:
     container_name: wordpress
     build:
       dockerfile: containers/wordpress/Dockerfile
-      # args:
-      #   DB_NAME: ${DB_NAME}
-      #   DB_USER: ${DB_USER}
-      #   DB_PSW: ${DB_PSW}
-    environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PSW: ${DB_PSW}
-      DB_HOST: mariadb
-    # depends_on:
-    #   - mariadb
+      args:
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PSW: ${DB_PSW}
     depends_on:
       mariadb:
         condition: service_healthy

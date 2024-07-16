@@ -32,7 +32,7 @@ down:
 	@$(PRINT) "STEP DROP ${name}...\n"
 	@docker compose -f ./srcs/docker-compose.yml --env-file .env down
 
-re: build
+re: down build
 	@$(PRINT) "STEP RE-BUILD ${name}...\n"
 
 clean: down

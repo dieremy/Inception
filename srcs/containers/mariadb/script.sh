@@ -1,41 +1,28 @@
 #!/bin/bash
 
-# Check if MySQL/MariaDB is initialized
-if [ ! -d "/var/lib/mysql/mysql" ]; then
-    # Set correct ownership
-    chown -R mysql:mysql /var/lib/mysql
+# Set correct ownership on data directory
+chown -R mysql:mysql /var/lib/mysql
 
-    # Initialize database if not already initialized
-    mysql_install_db --basedir=/usr --datadir=/var/lib/mysql --user=mysql --rpm
-
-    # Check if temporary file can be created
-    tfile=$(mktemp)
-    if [ ! -f "$tfile" ]; then
-        echo "Failed to create temporary file"
-        exit 1
-    fi
+# Check if database needs initialization
+if mysql -uroot -e "SELECT 1" > /dev/null 2>&1; then
+  echo "Database already initialized"
+  exit 0
 fi
 
-# Check if WordPress database is created
-if [ ! -d "/var/lib/mysql/${DB_NAME}" ]; then
-    # Create SQL script to set up database and grant privileges
-    cat << EOF > /tmp/create_db.sql
-USE mysql;
-FLUSH PRIVILEGES;
-DELETE FROM mysql.user WHERE User='';
-DROP DATABASE test;
-DELETE FROM mysql.db WHERE Db='test';
-DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT}';
-CREATE DATABASE '${DB_NAME}' CHARACTER SET utf8 COLLATE utf8_general_ci;
-CREATE USER '$DB_USER'@'%' IDENTIFIED BY '${DB_PSW}';
-GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '$DB_USER'@'%';
-FLUSH PRIVILEGES;
-EOF
+echo "CREATE USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_ROOT}';" | mysql
 
-    # Run SQL script to initialize WordPress database and grant privileges
-    /usr/bin/mysqld --user=mysql --bootstrap < /tmp/create_db.sql
+# Disable remote root access
+echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;" | mysql
+echo "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" | mysql
 
-    # Remove temporary SQL script
-    rm -f /tmp/create_db.sql
-fi
+# Create the WordPress database and user with minimal privileges
+echo "CREATE DATABASE ${DB_NAME} CHARACTER SET utf8 COLLATE utf8_general_ci;" | mysql
+echo "CREATE USER '${DB_USER}'@'%' IDENTIFIED BY '${DB_PSW}';" | mysql
+echo "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';" | mysql
+
+# Flush privileges for immediate effect
+echo "FLUSH PRIVILEGES;" | mysql
+
+echo "Database initialized successfully"
+
+# exec /usr/bin/mysqld --user=mysql --console
