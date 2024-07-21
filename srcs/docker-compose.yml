@@ -19,11 +19,11 @@ services:
     container_name: mariadb
     build:
       dockerfile: containers/mariadb/Dockerfile
-    environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PSW: ${DB_PSW}
-      DB_ROOT: ${DB_ROOT}
+      args:
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PSW: ${DB_PSW}
+        DB_ROOT: ${DB_ROOT}
     ports:
       - "3306:3306"
     networks:
@@ -45,6 +45,7 @@ services:
         DB_NAME: ${DB_NAME}
         DB_USER: ${DB_USER}
         DB_PSW: ${DB_PSW}
+        DOMAIN_NAME: ${DOMAIN_NAME}
     depends_on:
       mariadb:
         condition: service_healthy

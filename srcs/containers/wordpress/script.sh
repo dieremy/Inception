@@ -1,26 +1,17 @@
 #!/bin/bash
 
+while ! mysql -hmariadb -u$DB_USER -p$DB_PSW &>/dev/null; do
+    echo "Waiting for MariaDB to be ready..."
+    sleep 3
+done
+
 if [ ! -f "/var/www/wp-config.php" ]; then
-
-cat << EOF > /var/www/wp-config.php
-<?php
-define( 'DB_NAME', '$DB_NAME' );
-define( 'DB_USER', '$DB_USER' );
-define( 'DB_PASSWORD', '$DB_PSW' );
-define( 'DB_HOST', 'mariadb' );
-define( 'DB_CHARSET', 'utf8' );
-define( 'DB_COLLATE', '' );
-define('FS_METHOD','direct');
-\$table_prefix = 'wp_';
-define( 'WP_DEBUG', false );
-if ( ! defined( 'ABSPATH' ) ) {
-define( 'ABSPATH', __DIR__ . '/' );}
-define( 'WP_REDIS_HOST', 'redis' );
-define( 'WP_REDIS_PORT', 6379 );
-define( 'WP_REDIS_TIMEOUT', 1 );
-define( 'WP_REDIS_READ_TIMEOUT', 1 );
-define( 'WP_REDIS_DATABASE', 0 );
-require_once ABSPATH . 'wp-settings.php';
-EOF
-
+    echo "Starting wp set up..."
+    wp core download --allow-root
+    wp config create --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PSW --dbhost=mariadb --allow-root
+    wp core install --url=$DOMAIN_NAME --title="Sdesdo's Site" --admin_user=admin --admin_password=admin --admin_email=admin@example.com --skip-email --allow-root
+    wp user create sdesdo sdesdo@mail.com --role=author --user_pass=Secret1! --allow-root
+    wp theme install bizboost --activate --allow-root
 fi
+
+/usr/sbin/php-fpm8 -F
