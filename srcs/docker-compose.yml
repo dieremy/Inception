@@ -1,7 +1,8 @@
 services:
   nginx:
     build:
-      dockerfile: containers/nginx/Dockerfile
+      context: ./containers/nginx
+      dockerfile: Dockerfile
     container_name: nginx
     depends_on:
       - wordpress
@@ -12,18 +13,19 @@ services:
     volumes:
       - ./containers/nginx:/etc/nginx/http.d/
       - ./containers/nginx/certs:/etc/nginx/ssl/
-      - wp-volume:/var/www/
+      - wp-volume:/var/www/html
     restart: always
 
   mariadb:
     container_name: mariadb
     build:
-      dockerfile: containers/mariadb/Dockerfile
-      args:
-        DB_NAME: ${DB_NAME}
-        DB_USER: ${DB_USER}
-        DB_PSW: ${DB_PSW}
-        DB_ROOT: ${DB_ROOT}
+      context: ./containers/mariadb
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PSW}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT}
     ports:
       - "3306:3306"
     networks:
@@ -40,25 +42,28 @@ services:
   wordpress:
     container_name: wordpress
     build:
-      dockerfile: containers/wordpress/Dockerfile
-      args:
-        DB_NAME: ${DB_NAME}
-        DB_USER: ${DB_USER}
-        DB_PSW: ${DB_PSW}
-        DOMAIN_NAME: ${DOMAIN_NAME}
+      context: ./containers/wordpress
+      dockerfile: Dockerfile
+    environment:
+      - WORDPRESS_DB_HOST=mariadb:3306
+      - WORDPRESS_DB_NAME=${DB_NAME}
+      - WORDPRESS_DB_USER=${DB_USER}
+      - WORDPRESS_DB_PASSWORD=${DB_PSW}
+      - DOMAIN_NAME=${DOMAIN_NAME}
     depends_on:
       mariadb:
         condition: service_healthy
     networks:
       - inception
     volumes:
-      - wp-volume:/var/www/
+      - wp-volume:/var/www/html
     restart: always
 
   redis:
     container_name: redis
     build:
-      dockerfile: containers/redis/Dockerfile
+      context: ./containers/redis
+      dockerfile: Dockerfile
     depends_on:
       - wordpress
     ports:
@@ -106,12 +111,14 @@ services:
 
 volumes:
   wp-volume:
+    driver: local
     driver_opts:
       o: bind
       type: none
       device: /home/${USER}/data/wordpress
 
   db-volume:
+    driver: local
     driver_opts:
       o: bind
       type: none

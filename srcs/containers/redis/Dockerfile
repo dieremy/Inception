@@ -1,4 +1,4 @@
-FROM alpine:3.16.0
+FROM alpine:3.18.0
 
 ENV REDIS_VERSION=7.0.15-r0
 

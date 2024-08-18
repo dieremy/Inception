@@ -1,7 +1,7 @@
-FROM alpine:3.16.0
+FROM alpine:3.18.0
 
-ENV PHP_VERSION=8
-ENV WGET_VERSION=1.21.3-r0
+ENV PHP_VERSION=82
+ENV WGET_VERSION=1.21.4-r0
 
 RUN apk update && apk upgrade && apk add --no-cache \
     php${PHP_VERSION} \
@@ -33,4 +33,4 @@ RUN wget -L https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.
 
 EXPOSE 8080
 
-CMD [ "/usr/bin/php8", "-S", "[::]:8080", "-t", "/var/www" ]
+CMD [ "/usr/bin/php82", "-S", "[::]:8080", "-t", "/var/www" ]
