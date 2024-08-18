@@ -2,7 +2,7 @@ FROM alpine:3.18.0
 
 ENV NGINX_VERSION=1.24.0-r7
 
-RUN	apk update && \
+RUN apk update && \
     apk add --no-cache \
     nginx=${NGINX_VERSION}
 

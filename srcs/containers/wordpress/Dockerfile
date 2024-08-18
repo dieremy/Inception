@@ -6,6 +6,9 @@ ENV FCGI_VERSION=2.4.2-r4
 ENV PHP_VERSION=82
 ENV WGET_VERSION=1.21.4-r0
 
+ENV MARIADB_VERSION=10.11.8-r0
+ENV MYSQL_VERSION=10.11.8-r0
+
 ARG WORDPRESS_DB_NAME
 ARG WORDPRESS_DB_USER
 ARG WORDPRESS_DB_PASSWORD
@@ -18,7 +21,11 @@ RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories
     apk add --no-cache \
         bash=${BASH_VERSION} \
         curl=${CURL_VERSION} \
-        fcgi=${FCGI_VERSION} \ 
+        fcgi=${FCGI_VERSION} \
+        mariadb=${MARIADB_VERSION} \
+        mariadb-client=${MARIADB_VERSION} \
+        mysql=${MYSQL_VERSION}\
+        mysql-client=${MYSQL_VERSION} \ 
         wget=${WGET_VERSION} \
         php${PHP_VERSION} \
         php${PHP_VERSION}-cli \
@@ -44,9 +51,9 @@ RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories
 RUN ln -s /usr/bin/php82 /usr/bin/php
 
 # Install wp-cli
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/bin/wp-cli
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp
 
 # Create necessary directories
 RUN mkdir -p /var/www/html && \
@@ -58,14 +65,14 @@ RUN sed -i "s/listen = 127.0.0.1:9000/listen = 9000/g" /etc/php82/php-fpm.d/www.
 
 WORKDIR /var/www/html
 
-RUN wp-cli core download --allow-root
+# RUN wp-cli core download --allow-root
 
-COPY conf/wordpress-inception.xml /wordpress-inception.xml
+COPY conf/wp-inception.xml /var/www/html/wp-inception.xml
 
-COPY script.sh /script.sh
+COPY script.sh /var/www/html/script.sh
 
-RUN chmod +x /script.sh
+RUN chmod +x /var/www/html/script.sh
 
 EXPOSE 9000
 
-ENTRYPOINT ["bash", "/script.sh"]
+ENTRYPOINT ["bash", "/var/www/html/script.sh"]

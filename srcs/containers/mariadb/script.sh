@@ -1,37 +1,51 @@
 #!/bin/bash
 
-kill $(cat /var/run/mysqld/mariadb.pid)
-# rc-service mariadb restart
-mysqld
-# mysqld_safe --datadir="/var/lib/mysql"
+check_mariadb() {
+    mysqladmin ping -h localhost --silent
+}
 
-# if [ ! -d "/var/lib/mysql/mysql" ]; then
-#   chown -R mysql:mysql /var/lib/mysql
+# Initialize MariaDB if not already initialized
+if [ ! -d "/var/lib/mysql/mysql" ]; then
+    echo "Initializing MariaDB..."
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
-#   # Init database
-#   mysql_install_db --basedir=/usr --datadir=/var/lib/mysql --user=mysql --rpm
+    # Start MariaDB in the background
+    mysqld_safe --datadir=/var/lib/mysql &
 
-#   tfile=$(mktemp)
-#   if [ ! -f "$tfile" ]; then
-#     return 1
-#   fi
-# fi
+    echo "Waiting for MariaDB to start..."
+    until check_mariadb; do
+        sleep 1
+    done
 
-# if [ ! -d "/var/lib/mysql/wordpress" ]; then
-# cat << EOF > /tmp/create_db.sql
-# USE mysql;
-# FLUSH PRIVILEGES;
-# DELETE FROM mysql.user WHERE User='';
-# DROP DATABASE test;
-# DELETE FROM mysql.db WHERE Db='test';
-# DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-# ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
-# CREATE DATABASE ${MYSQL_DATABASE} CHARACTER SET utf8 COLLATE utf8_general_ci;
-# CREATE USER '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
-# GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
-# FLUSH PRIVILEGES;
-# EOF
+    echo "MariaDB started. Running initialization script..."
+    echo "Starting WordPress setup..."
 
-#   /usr/bin/mysqld --user=mysql --bootstrap < /tmp/create_db.sql
-#   rm -f /tmp/create_db.sql
-# fi
+# debug
+    # echo "MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD"
+    # echo "MYSQL_DATABASE: $MYSQL_DATABASE"
+    # echo "MYSQL_USER: $MYSQL_USER"
+    # echo "MYSQL_PASSWORD: $MYSQL_PASSWORD"
+
+    # Run the initialization SQL
+    mysql -u root <<-EOSQL
+DELETE FROM mysql.user WHERE User='';
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
+CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE} CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
+FLUSH PRIVILEGES;
+EOSQL
+
+    echo "Stopping MariaDB..."
+    mysqladmin -u root -p"${MYSQL_ROOT_PASSWORD}" shutdown
+
+    # Wait for MariaDB to shut down completely
+    sleep 5
+fi
+
+# Start MariaDB normally
+echo "Starting MariaDB..."
+exec mysqld_safe --datadir=/var/lib/mysql
