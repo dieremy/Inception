@@ -70,6 +70,8 @@ RUN sed -i "s/listen = 127.0.0.1:9000/listen = 9000/g" /etc/php82/php-fpm.d/www.
 
 WORKDIR /var/www/html
 
+COPY asset/cat-meme-png.png /var/www/html/cat-meme-png.png
+
 COPY app/generate_static.sh /var/www/html/generate_static.sh
 
 COPY conf/wp-inception.xml /var/www/html/wp-inception.xml
