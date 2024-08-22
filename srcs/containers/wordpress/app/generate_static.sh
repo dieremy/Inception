@@ -11,7 +11,7 @@ experience=(
     '{"company": "Company anotherSdesdo", "start_date": "3023", "end_date": "Present", "job_title": "Software Developer", "description": "Working on exciting new projects involving a lot of crazy stuff."}'
 )
 
-cat_file="/var/www/html/cat-meme-png.png"
+cat_file=cat-meme-png.png
 
 # CSS
 CSS_Style+="
@@ -113,7 +113,7 @@ html_template=$(cat <<EOF
   <button id="toggle-button" onclick="toggleImage()">Toggle Image</button>
 
   <section class="image-toggle">
-    <img id="toggle-image" src="file:'${cat_file}'" alt="Placeholder Image">
+    <img id="toggle-image" src="${cat_file}" alt="Placeholder Image">
   </section>
 
   <header class="header">
