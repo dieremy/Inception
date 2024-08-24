@@ -12,6 +12,7 @@ all:
 	@printf "CHECKING ${name}'s VOLUMES...\n"
 	@mkdir -p ~/data/mariadb
 	@mkdir -p ~/data/wordpress
+	@mkdir -p ~/data/grype
 ifeq ($(shell docker ps -q), "")
 	@$(PRINT) "STEP RE-LAUNCH ${name}...\n"
 	@docker compose -f ./srcs/docker-compose.yml --env-file .env up -d
@@ -40,6 +41,7 @@ clean: down
 	@docker system prune -a
 	@sudo rm -rf ~/data/wordpress/*
 	@sudo rm -rf ~/data/mariadb/*
+	@sudo rm -rf ~/data/grype/*
 
 fclean: clean
 	@$(PRINT) "STEP CLEAN ALL INFRASTRUCTURE docker\n"
