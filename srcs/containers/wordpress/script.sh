@@ -46,7 +46,7 @@ wp config create \
 # Install WordPress
 wp core install \
   --url=$DOMAIN_NAME \
-  --title="Dioporco" \
+  --title="Sdesdo" \
   --admin_user=admin \
   --admin_password=admin \
   --admin_email=admin@example.com \

@@ -105,7 +105,8 @@ services:
   grype:
     container_name: grype
     build:
-      dockerfile: containers/grype/Dockerfile
+      context: ./containers/grype
+      dockerfile: Dockerfile
     depends_on:
     - nginx
     - mariadb
@@ -114,7 +115,7 @@ services:
     - ftp
     - adminer
     volumes:
-    - grype-results:/scans/logs
+    - grype-results:/greport/logs
     - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - inception
