@@ -117,6 +117,7 @@ services:
     volumes:
     - grype-results:/greport/logs
     - /var/run/docker.sock:/var/run/docker.sock
+    # command: sh -c "pwd && ls -la"
     networks:
       - inception
     restart: always

@@ -7,14 +7,14 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
 
 func main() {
 	// Create a Docker client
 	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv(client.DefaultEnv))
+	cli, err := client.NewClientWithOpts(client.WithVersion("1.45"), client.FromEnv)
 	if err != nil {
 		panic(err)
 	}
@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Create the logs directory if it doesn't exist
-	if err := os.MkdirAll("./logs", os.ModePerm(0755)); err != nil {
+	if err := os.MkdirAll("./logs", os.ModePerm); err != nil {
 		fmt.Printf("Error creating logs directory: %v\n", err)
 		return
 	}
@@ -43,7 +43,7 @@ func main() {
 	cmdOut := io.MultiWriter(os.Stdout, logFile)
 
 	// Get a list of running containers
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true})
+	containers, err := cli.ContainerList(context.Background(), container.ListOptions{})
 	if err != nil {
 		fmt.Printf("Error getting container list: %v\n", err)
 		return
@@ -61,15 +61,14 @@ func main() {
 		}
 
 		// Scan the image using grype
-		cmd := exec.Command("grype", "scan", inspect.Image)
+		cmd := exec.Command("grype", inspect.Image)
 		cmd.Stdout = cmdOut // Redirect grype output to combined writer
 		cmd.Stderr = cmdOut // Redirect grype error output to combined writer
 
-		output, err := cmd.CombinedOutput()
+		err = cmd.Run() // Run the command
 		if err != nil {
 			fmt.Fprintf(cmdOut, "Error scanning image: %v\n", err)
 			continue
 		}
-		fmt.Fprintln(cmdOut, string(output)) // Write grype output to log file
 	}
 }

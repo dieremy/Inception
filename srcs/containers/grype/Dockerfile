@@ -15,8 +15,12 @@ RUN curl -sSfL https://go.dev/dl/go1.23.0.linux-amd64.tar.gz -o /tmp/go.tar.gz &
 
 RUN curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
 
-COPY greport/ /
+ENV PATH="/usr/local/go/bin:$PATH"
 
-WORKDIR greport
+RUN mkdir -p /greport
+
+COPY greport/* /greport/.
+
+WORKDIR /greport
 
 CMD ["make"]
