@@ -1,15 +1,22 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
+
+func getScanLogs(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	outputString := ctx.Value("outputString").(string)
+	io.WriteString(w, outputString)
+}
 
 func main() {
 	// Create a Docker client
@@ -19,28 +26,16 @@ func main() {
 		panic(err)
 	}
 
-	// Check if the Docker socket is mounted (if using Docker socket binding)
+	// Check if the Docker socket is mounted
 	if _, err := os.Stat("/var/run/docker.sock"); err != nil {
 		fmt.Println("Docker socket is not mounted. Please ensure it's accessible.")
 		return
 	}
 
-	// Create the logs directory if it doesn't exist
-	if err := os.MkdirAll("./logs", os.ModePerm); err != nil {
-		fmt.Printf("Error creating logs directory: %v\n", err)
-		return
-	}
+	// Define a buffer to store output
+	var buffer bytes.Buffer
 
-	// Open the log file for writing
-	logFile, err := os.OpenFile("./logs/grype_scan.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Printf("Error opening log file: %v\n", err)
-		return
-	}
-	defer logFile.Close() // Ensure log file is closed
-
-	// Redirect stdout and stderr to the log file
-	cmdOut := io.MultiWriter(os.Stdout, logFile)
+	cmdOut := io.MultiWriter(&buffer)
 
 	// Get a list of running containers
 	containers, err := cli.ContainerList(context.Background(), container.ListOptions{})
@@ -49,7 +44,7 @@ func main() {
 		return
 	}
 
-	// Iterate through each container and inspect it to get the image ID
+	// Iterate through each container
 	for _, container := range containers {
 		fmt.Fprintf(cmdOut, "Inspecting container: %s\n", container.ID)
 
@@ -60,15 +55,29 @@ func main() {
 			continue
 		}
 
-		// Scan the image using grype
+		// Scan the image using grype, redirect grype Std.OUT || Std.ERR 
 		cmd := exec.Command("grype", inspect.Image)
-		cmd.Stdout = cmdOut // Redirect grype output to combined writer
-		cmd.Stderr = cmdOut // Redirect grype error output to combined writer
+		cmd.Stdout = cmdOut
+		cmd.Stderr = cmdOut
 
-		err = cmd.Run() // Run the command
+		err = cmd.Run()
 		if err != nil {
 			fmt.Fprintf(cmdOut, "Error scanning image: %v\n", err)
 			continue
 		}
+	}
+
+	outputString := buffer.String()
+	ctx = context.WithValue(context.Background(), "outputString", outputString)
+
+	// Handle requests and pass the context to getScanLogs
+	http.HandleFunc("/api/v1/logs", func(w http.ResponseWriter, r *http.Request) {
+		getScanLogs(ctx, w, r)
+	})
+
+	fmt.Println("Listening on :3000")
+	err = http.ListenAndServe(":3000", nil)
+	if err != nil {
+		return
 	}
 }

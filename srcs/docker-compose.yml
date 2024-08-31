@@ -115,7 +115,7 @@ services:
     - ftp
     - adminer
     volumes:
-    - grype-results:/greport/logs
+    # - grype-results:/greport/logs
     - /var/run/docker.sock:/var/run/docker.sock
     # command: sh -c "pwd && ls -la"
     networks:
@@ -137,12 +137,12 @@ volumes:
       type: none
       device: /home/${USER}/data/mariadb
 
-  grype-results:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: /home/${USER}/data/grype
+  # grype-results:
+  #   driver: local
+  #   driver_opts:
+  #     o: bind
+  #     type: none
+  #     device: /home/${USER}/data/grype
 
 networks:
   inception:

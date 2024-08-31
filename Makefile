@@ -9,7 +9,6 @@ else
 endif
 
 all:
-	@printf "CHECKING ${name}'s VOLUMES...\n"
 	@mkdir -p ~/data/mariadb
 	@mkdir -p ~/data/wordpress
 	@mkdir -p ~/data/grype
